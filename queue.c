@@ -12,8 +12,12 @@
 queue_t *q_new()
 {
     queue_t *q = malloc(sizeof(queue_t));
-    /* TODO: What if malloc returned NULL? */
-    q->head = NULL;
+    // Successful allocation, assign related value
+    if (q) {
+        q->head = NULL;
+        q->tail = NULL;
+        q->size = 0;
+    }
     return q;
 }
 
@@ -35,12 +39,37 @@ void q_free(queue_t *q)
 bool q_insert_head(queue_t *q, char *s)
 {
     list_ele_t *newh;
-    /* TODO: What should you do if the q is NULL? */
+
+    /* Return false if empty value input */
+    if (!q || !s)
+        return false;
+
+    /* Allocate memory space */
     newh = malloc(sizeof(list_ele_t));
-    /* Don't forget to allocate space for the string and copy it */
-    /* What if either call to malloc returns NULL? */
+    if (!newh)
+        return false;  // Failed allocation, return false...
+
+    /* Allocate char space in newh.
+     * Don`t forget '\0' space in the end of string.
+     */
+    newh->value = malloc(sizeof(char) * (strlen(s) + 1));
+    if (!newh->value) {
+        // Failed allocation, free allocated space and return false...
+        free(newh);
+        return false;
+    }
+
+    // String assignment via strncpy
+    memset(newh->value, '\0', sizeof(char) * (strlen(s) + 1));
+    strncpy(newh->value, s, strlen(s));  // Avoid Buffer overflow attack!
+
+    // Pointer manipulation
     newh->next = q->head;
     q->head = newh;
+    if (!q->tail)
+        q->tail = newh;  // For initialize case
+    q->size++;           // Be aware of multiple access synchronization issue!
+
     return true;
 }
 
@@ -56,7 +85,40 @@ bool q_insert_tail(queue_t *q, char *s)
     /* TODO: You need to write the complete code for this function */
     /* Remember: It should operate in O(1) time */
     /* TODO: Remove the above comment when you are about to implement. */
-    return false;
+    list_ele_t *newt;
+
+    /* Return false if empty value input */
+    if (!q || !s)
+        return false;
+
+    /* Allocate memory space */
+    newt = malloc(sizeof(list_ele_t));
+    if (!newt)
+        return false;  // Failed allocation, return false...
+
+    /* Allocate char space in newt.
+     * Don`t forget '\0' space in the end of string.
+     */
+    newt->value = malloc(sizeof(char) * (strlen(s) + 1));
+    if (!newt->value) {
+        // Failed allocation, free allocated space and return false...
+        free(newt);
+        return false;
+    }
+
+    // String assignment via strncpy
+    memset(newt->value, '\0', sizeof(char) * (strlen(s) + 1));
+    strncpy(newt->value, s, strlen(s));  // Avoid Buffer overflow attack!
+
+    // Pointer manipulation
+    newt->next = NULL;  // Avoid non-zero initial value
+    q->tail->next = newt;
+    q->tail = newt;
+    if (!q->head)
+        q->head = newt;  // For initialize case
+    q->size++;           // Be aware of multiple access synchronization issue!
+
+    return true;
 }
 
 /*
