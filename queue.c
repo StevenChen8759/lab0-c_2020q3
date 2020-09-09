@@ -24,7 +24,22 @@ queue_t *q_new()
 /* Free all storage used by queue */
 void q_free(queue_t *q)
 {
-    /* TODO: How about freeing the list elements and the strings? */
+    list_ele_t *ptr;  // Declare operating pointer
+
+    /* check if q is NULL or not */
+    if (q != NULL) {
+        ptr = q->head;
+    } else
+        return;
+
+    /* Free list nodes and its string space*/
+    while (ptr != NULL) {
+        free(ptr->value);
+        ptr = ptr->next;
+        free(q->head);
+        q->head = ptr;
+    }
+
     /* Free queue structure */
     free(q);
 }
@@ -82,9 +97,6 @@ bool q_insert_head(queue_t *q, char *s)
  */
 bool q_insert_tail(queue_t *q, char *s)
 {
-    /* TODO: You need to write the complete code for this function */
-    /* Remember: It should operate in O(1) time */
-    /* TODO: Remove the above comment when you are about to implement. */
     list_ele_t *newt;
 
     /* Return false if empty value input */
@@ -131,9 +143,27 @@ bool q_insert_tail(queue_t *q, char *s)
  */
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
-    /* TODO: You need to fix up this code. */
-    /* TODO: Remove the above comment when you are about to implement. */
+    /* Declare operating pointer on nodes */
+    list_ele_t *ptr;
+
+    /* Reject q is NULL and q->head is NULL cases */
+    if (!q || !(q->head))
+        return false;
+
+    /* Operating Pointer Assignment */
+    ptr = q->head;
+
+    /* Copy string to *sp */
+    if (sp)
+        strncpy(sp, ptr->value, bufsize);
+
+    /* Edit pointer and free node space */
     q->head = q->head->next;
+    free(ptr->value);
+    free(ptr);
+    q->size--;
+    if (q->size == 0)
+        q->tail = NULL;
     return true;
 }
 
@@ -143,10 +173,7 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
  */
 int q_size(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* Remember: It should operate in O(1) time */
-    /* TODO: Remove the above comment when you are about to implement. */
-    return 0;
+    return q ? q->size : 0;
 }
 
 /*
