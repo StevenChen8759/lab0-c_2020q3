@@ -185,8 +185,93 @@ int q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* TODO: Remove the above comment when you are about to implement. */
+    /* Operating pointer declaration */
+    list_ele_t *prev, *curr, *nex;
+
+    /* Reject null pointer case */
+    if (!q || !(q->head))
+        return;
+
+    /* Size is 1, return */
+    if (q->size == 1)
+        return;
+
+    /* Operating pointer initialize */
+    curr = q->head;
+    nex = q->head->next;
+    prev = NULL;
+
+    /* Do list reverse */
+    while (curr != NULL) {
+        curr->next = prev;
+        prev = curr;
+        curr = nex;
+        /* To Avoid null pointer dereference,
+           Add NULL pointer judge for pointer nex */
+        if (nex != NULL)
+            nex = nex->next;
+    }
+
+    /* Re-assign head and tail pointer */
+    q->tail = q->head;
+    q->head = prev;
+}
+
+/* merge() for q_sort() usage */
+list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
+{
+    // int cnt = 0;
+    size_t len_l1, len_l2;
+
+    // merge with recursive
+    if (!l2)
+        return l1;
+    if (!l1)
+        return l2;
+
+    // Fetch string length
+    len_l1 = strlen(l1->value);
+    len_l2 = strlen(l2->value);
+
+    // Use maximum length
+    if (len_l1 < len_l2)
+        len_l1 = len_l2;
+
+    if (strncmp(l1->value, l2->value, len_l1) <= 0) {
+        // l1 is smaller than or equal to l2
+        l1->next = merge(l1->next, l2);
+        return l1;
+    } else {
+        // l1 is bigger than l2
+        l2->next = merge(l1, l2->next);
+        return l2;
+    }
+}
+
+/* mergeSortLitst() for q_sort() usage */
+list_ele_t *mergeSortList(list_ele_t *head)
+{
+    // merge sort
+    if (!head || !head->next)
+        return head;
+
+    list_ele_t *fast = head->next;
+    list_ele_t *slow = head;
+
+    // split list
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    fast = slow->next;
+    slow->next = NULL;
+
+    // sort each list
+    list_ele_t *l1 = mergeSortList(head);
+    list_ele_t *l2 = mergeSortList(fast);
+
+    // merge sorted l1 and sorted l2
+    return merge(l1, l2);
 }
 
 /*
@@ -196,6 +281,24 @@ void q_reverse(queue_t *q)
  */
 void q_sort(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* TODO: Remove the above comment when you are about to implement. */
+    /* Sort list by [Merge Sort] */
+    list_ele_t *ptr;
+
+    /* Reject q is NULL case  */
+    if (!q)
+        return;
+
+    /* Return directly while queue has only 1 element */
+    if (q->size == 1)
+        return;
+
+    /* Call Sorting function */
+    q->head = mergeSortList(q->head);
+
+    /* Re-assign tail pointer */
+    ptr = q->head;
+    while (ptr->next != NULL) {
+        ptr = ptr->next;
+    }
+    q->tail = ptr;
 }
