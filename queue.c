@@ -75,8 +75,8 @@ bool q_insert_head(queue_t *q, char *s)
     }
 
     // String assignment via strncpy
-    memset(newh->value, '\0', sizeof(char) * (strlen(s) + 1));
     strncpy(newh->value, s, strlen(s));  // Avoid Buffer overflow attack!
+    *(newh->value + strlen(s)) = '\0';   // Edit end-of-string
 
     // Pointer manipulation
     newh->next = q->head;
@@ -119,8 +119,8 @@ bool q_insert_tail(queue_t *q, char *s)
     }
 
     // String assignment via strncpy
-    memset(newt->value, '\0', sizeof(char) * (strlen(s) + 1));
     strncpy(newt->value, s, strlen(s));  // Avoid Buffer overflow attack!
+    *(newt->value + strlen(s)) = '\0';   // Edit end-of-string
 
     // Pointer manipulation
     newt->next = NULL;  // Avoid non-zero initial value
@@ -160,8 +160,8 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 
     /* Copy string to *sp */
     if (sp) {
-        memset(sp, '\0', sizeof(char) * bufsize);
         strncpy(sp, ptr->value, bufsize - 1);
+        *(sp + bufsize - 1) = '\0';  // Edit end-of-string
     }
 
     /* Edit pointer and free node space */
