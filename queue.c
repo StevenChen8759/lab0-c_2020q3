@@ -124,7 +124,9 @@ bool q_insert_tail(queue_t *q, char *s)
 
     // Pointer manipulation
     newt->next = NULL;  // Avoid non-zero initial value
-    q->tail->next = newt;
+    if (q->tail)
+        q->tail->next =
+            newt;  // only assign next value while q->tail is not NULL
     q->tail = newt;
     if (!q->head)
         q->head = newt;  // For initialize case
@@ -147,22 +149,27 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
     list_ele_t *ptr;
 
     /* Reject q is NULL and q->head is NULL cases */
-    if (!q || !(q->head))
+    if (!q)
+        return false;
+
+    if (!(q->head))
         return false;
 
     /* Operating Pointer Assignment */
     ptr = q->head;
 
     /* Copy string to *sp */
-    if (sp)
-        strncpy(sp, ptr->value, bufsize);
+    if (sp) {
+        memset(sp, '\0', sizeof(char) * bufsize);
+        strncpy(sp, ptr->value, bufsize - 1);
+    }
 
     /* Edit pointer and free node space */
     q->head = q->head->next;
     free(ptr->value);
     free(ptr);
     q->size--;
-    if (q->size == 0)
+    if (!q->head)
         q->tail = NULL;
     return true;
 }
@@ -288,8 +295,8 @@ void q_sort(queue_t *q)
     if (!q)
         return;
 
-    /* Return directly while queue has only 1 element */
-    if (q->size == 1)
+    /* Return directly while queue has less than or equal to 1 element */
+    if (q->size <= 1)
         return;
 
     /* Call Sorting function */
