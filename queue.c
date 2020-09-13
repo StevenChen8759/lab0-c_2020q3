@@ -225,10 +225,10 @@ void q_reverse(queue_t *q)
 }
 
 /*
- * String-Is-Greater-or-Equal function
- * This function compare with two string by input argument.
- * If str1 is greater or equal to str2 then return true.
- * Otherwise or NULL pointer input, return false.
+ * List-Element-Is-Greater-or-Equal function
+ * This function compare with two list elements by input argument.
+ * If ele1->value is greater or equal to ele2->value, then return true.
+ * Otherwise or NULL list element pointer input, return false.
  * TODO: make this function as a Marco call to improve performance
  */
 bool listelement_isge(list_ele_t *ele1, list_ele_t *ele2)
@@ -240,7 +240,7 @@ bool listelement_isge(list_ele_t *ele1, list_ele_t *ele2)
     if (!ele1 || !ele2)
         return false;
 
-    /* Assing input string and do NULL chcek */
+    /* Assign input string and do NULL chcek */
     str1 = ele1->value;
     str2 = ele2->value;
     if (!str1 || !str2)
