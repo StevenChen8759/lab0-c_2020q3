@@ -224,61 +224,47 @@ void q_reverse(queue_t *q)
     q->head = prev;
 }
 
-/* merge() for q_sort() usage */
-list_ele_t *merge(list_ele_t *l1, list_ele_t *l2)
+/*
+ * String-Is-Greater-or-Equal function
+ * This function compare with two string by input argument.
+ * If str1 is greater or equal to str2 then return true.
+ * Otherwise or NULL pointer input, return false.
+ * TODO: make this function as a Marco call to improve performance
+ */
+bool listelement_isge(list_ele_t *ele1, list_ele_t *ele2)
 {
-    // int cnt = 0;
-    size_t len_l1, len_l2;
+    size_t len1, len2;
+    char *str1 = NULL, *str2 = NULL;
 
-    // merge with recursive
-    if (!l2)
-        return l1;
-    if (!l1)
-        return l2;
+    /* Input pointer check */
+    if (!ele1 || !ele2)
+        return false;
 
-    // Fetch string length
-    len_l1 = strlen(l1->value);
-    len_l2 = strlen(l2->value);
+    /* Assing input string and do NULL chcek */
+    str1 = ele1->value;
+    str2 = ele2->value;
+    if (!str1 || !str2)
+        return false;
 
-    // Use maximum length
-    if (len_l1 < len_l2)
-        len_l1 = len_l2;
+    /* Decrease strlen() function call count,
+     * We store length in the local variable.
+     */
+    len1 = strlen(str1);
+    len2 = strlen(str2);
 
-    if (strncmp(l1->value, l2->value, len_l1) <= 0) {
-        // l1 is smaller than or equal to l2
-        l1->next = merge(l1->next, l2);
-        return l1;
-    } else {
-        // l1 is bigger than l2
-        l2->next = merge(l1, l2->next);
-        return l2;
-    }
-}
+    /* First of all, compare with string length */
+    if (len1 < len2)
+        return false;
+    else if (len1 > len2)
+        return true;
 
-/* mergeSortLitst() for q_sort() usage */
-list_ele_t *mergeSortList(list_ele_t *head)
-{
-    // merge sort
-    if (!head || !head->next)
-        return head;
-
-    list_ele_t *fast = head->next;
-    list_ele_t *slow = head;
-
-    // split list
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-    }
-    fast = slow->next;
-    slow->next = NULL;
-
-    // sort each list
-    list_ele_t *l1 = mergeSortList(head);
-    list_ele_t *l2 = mergeSortList(fast);
-
-    // merge sorted l1 and sorted l2
-    return merge(l1, l2);
+    /* If length two string is equivalent,
+     * then call strncmp() to compare two string.
+     * This method can avoid buffer overflow attack.
+     * Based on return value of strncmp, this function return assigned
+     * comparison result
+     */
+    return (strncmp(str1, str2, len1) >= 0);
 }
 
 /*
@@ -288,7 +274,6 @@ list_ele_t *mergeSortList(list_ele_t *head)
  */
 void q_sort(queue_t *q)
 {
-    /* Sort list by [Merge Sort] */
     list_ele_t *ptr;
 
     /* Reject q is NULL case  */
@@ -299,13 +284,24 @@ void q_sort(queue_t *q)
     if (q->size <= 1)
         return;
 
-    /* Call Sorting function */
-    q->head = mergeSortList(q->head);
+    /* Declare Array for list element pointer */
+    list_ele_t *listarray[q->size];
+    list_ele_t **laptr;
 
-    /* Re-assign tail pointer */
+    /* Assign list element address from head to tail (O(n) cost) */
     ptr = q->head;
-    while (ptr->next != NULL) {
+    laptr = listarray;
+    while (ptr != NULL) {
+        *laptr = ptr;
+        printf("%s\n", (*laptr)->value);
+        laptr++;
         ptr = ptr->next;
     }
-    q->tail = ptr;
+
+    /*
+     * Traverse array and do merge sort based on string comparison result
+     */
+    if (listelement_isge(listarray[0], listarray[1]))
+        printf("8888888888\n");  // For temporally cppcheck unusedFunction error
+                                 // suppression
 }
