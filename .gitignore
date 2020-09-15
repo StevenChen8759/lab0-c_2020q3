@@ -6,3 +6,4 @@ qtest
 .devcontainer
 core*
 massif.out*
+list_pic
