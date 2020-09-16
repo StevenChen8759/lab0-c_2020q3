@@ -253,19 +253,14 @@ bool listelement_isle(list_ele_t *ele1, list_ele_t *ele2)
     len1 = strlen(str1);
     len2 = strlen(str2);
 
-    /* First of all, compare with string length */
-    if (len1 > len2)
-        return false;
-    else if (len1 < len2)
-        return true;
-
-    /* If length two string is equivalent,
-     * then call strncmp() to compare two string.
+    /* Call strncmp() to compare two string based on shorter string length
      * This method can avoid buffer overflow attack.
      * Based on return value of strncmp, this function return assigned
      * comparison result
      */
-    return (strncmp(str1, str2, len1) <= 0);
+
+    return (len1 >= len2) ? (strncmp(str1, str2, len2) <= 0)
+                          : (strncmp(str1, str2, len1) <= 0);
 }
 
 /*
