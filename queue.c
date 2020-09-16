@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -225,13 +226,13 @@ void q_reverse(queue_t *q)
 }
 
 /*
- * List-Element-Is-Greater-or-Equal function
+ * List-Element-Is-Less-or-Equal function
  * This function compare with two list elements by input argument.
- * If ele1->value is greater or equal to ele2->value, then return true.
+ * If ele1->value is less or equal to ele2->value, then return true.
  * Otherwise or NULL list element pointer input, return false.
  * TODO: make this function as a Marco call to improve performance
  */
-bool listelement_isge(list_ele_t *ele1, list_ele_t *ele2)
+bool listelement_isle(list_ele_t *ele1, list_ele_t *ele2)
 {
     size_t len1, len2;
     char *str1 = NULL, *str2 = NULL;
@@ -253,9 +254,9 @@ bool listelement_isge(list_ele_t *ele1, list_ele_t *ele2)
     len2 = strlen(str2);
 
     /* First of all, compare with string length */
-    if (len1 < len2)
+    if (len1 > len2)
         return false;
-    else if (len1 > len2)
+    else if (len1 < len2)
         return true;
 
     /* If length two string is equivalent,
@@ -264,7 +265,63 @@ bool listelement_isge(list_ele_t *ele1, list_ele_t *ele2)
      * Based on return value of strncmp, this function return assigned
      * comparison result
      */
-    return (strncmp(str1, str2, len1) >= 0);
+    return (strncmp(str1, str2, len1) <= 0);
+}
+
+/*
+ * Merge function for iterative Linked-list merge sort.
+ */
+
+void merge(list_ele_t *listarr[], int lb, int mid, int rb)
+{
+    int i, j, k;
+    int n1 = mid - lb + 1;
+    int n2 = rb - mid;
+    list_ele_t *L[n1], *R[n2];
+
+    for (i = 0; i < n1; i++)
+        L[i] = listarr[lb + i];
+
+    for (j = 0; j < n2; j++)
+        R[j] = listarr[mid + 1 + j];
+
+
+    i = 0, j = 0, k = lb;
+    while (i < n1 && j < n2) {
+        if (listelement_isle(L[i], R[j])) {
+            listarr[k] = L[i];
+            i++;
+        } else {
+            listarr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+    while (i < n1) {
+        listarr[k] = L[i];
+        i++;
+        k++;
+    }
+    while (j < n2) {
+        listarr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+/*
+ * Iterative merge sort (main function) for a linked-list.
+ */
+void itMergeSort(list_ele_t **listarr, int lb, int rb)
+{
+    if (lb < rb) {
+        int mid = lb + (rb - lb) / 2;
+        // assert(mid & 0x80000000); // Assert if mid goes to negative value!
+
+        itMergeSort(listarr, lb, mid);
+        itMergeSort(listarr, mid + 1, rb);
+        merge(listarr, lb, mid, rb);
+    }
 }
 
 /*
@@ -275,6 +332,7 @@ bool listelement_isge(list_ele_t *ele1, list_ele_t *ele2)
 void q_sort(queue_t *q)
 {
     list_ele_t *ptr;
+    int i;
 
     /* Reject q is NULL case  */
     if (!q)
@@ -293,15 +351,23 @@ void q_sort(queue_t *q)
     laptr = listarray;
     while (ptr != NULL) {
         *laptr = ptr;
-        printf("%s\n", (*laptr)->value);
+        // printf("%s\n", (*laptr)->value);
         laptr++;
         ptr = ptr->next;
     }
 
     /*
      * Traverse array and do merge sort based on string comparison result
+     * Time: O(nlogn)
      */
-    if (listelement_isge(listarray[0], listarray[1]))
-        printf("8888888888\n");  // For temporally cppcheck unusedFunction error
-                                 // suppression
+    itMergeSort(listarray, 0, (q->size - 1));
+
+    /* Based on the result of sorted list array, assign next field of each node
+     */
+    for (i = 0; i < q->size; i++)
+        listarray[i]->next = (i != q->size - 1) ? listarray[i + 1] : NULL;
+
+    /* Finally, assign new head and tail pointers */
+    q->head = listarray[0];
+    q->tail = listarray[q->size - 1];
 }
