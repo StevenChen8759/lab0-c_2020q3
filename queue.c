@@ -4,8 +4,6 @@
 
 #include "queue.h"
 
-#define QUEUE_SHOW_INTERNAL
-
 /* Notice: sometimes, Cppcheck would find the potential NULL pointer bugs,
  * but some of them cannot occur. You can suppress them by adding the
  * following line.
@@ -25,24 +23,6 @@ struct list_head *q_new()
 
     return queue_head_ptr;
 }
-
-
-#ifdef QUEUE_SHOW_INTERNAL
-void q_show_internal(struct list_head *head)
-{
-    element_t *element = NULL;
-
-    printf("[");
-
-    if (head->prev == head)
-        printf("]\n");
-
-    list_for_each_entry (element, head, list) {
-        printf("%s%s", element->value,
-               element->list.next == head ? "]\n" : " ");
-    }
-}
-#endif
 
 /* Free all storage used by queue */
 void q_free(struct list_head *head)
@@ -283,15 +263,6 @@ bool q_delete_dup(struct list_head *head)
         cnt_1++;
     }
 
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Original] => ");
-    q_show_internal(head);
-
-    printf("Delete Map => ");
-    for (int i = 0; i < queue_size; i++)
-        printf("%d%s", node_need_del_mask[i], i != queue_size - 1 ? " " : "\n");
-#endif
-
     // Delete duplicated elements
     cnt_3 = 0;
     list_for_each_entry_safe (element, element_next, head, list) {
@@ -301,11 +272,6 @@ bool q_delete_dup(struct list_head *head)
             free(element);
         }
     }
-
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Delete Dup Final] => ");
-    q_show_internal(head);
-#endif
 
     // Don't forget to free allocated queue! (Checked by Address Santizer)
     free(node_need_del_mask);
@@ -371,11 +337,6 @@ void q_reverseK(struct list_head *head, int k)
     INIT_LIST_HEAD(&temp_list);
     INIT_LIST_HEAD(&merged_list);
 
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Reverse k original] => ");
-    q_show_internal(head);
-#endif
-
     list_for_each_safe (node, node_next, head) {
         list_del(node);
         list_add_tail(node, &temp_list);
@@ -401,11 +362,6 @@ void q_reverseK(struct list_head *head, int k)
         merged_list.prev = temp_list.prev;
         (merged_list.prev)->next = &merged_list;
     }
-
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Reverse k Final] => ");
-    q_show_internal(&merged_list);
-#endif
 
     head->prev = merged_list.prev;
     head->prev->next = head;
@@ -449,17 +405,7 @@ struct list_head *q_merge_list(struct list_head *left,
 {
     struct list_head *left_node = left->next, *right_node = right->next, *temp;
     // struct list_head *left_node_next, *right_node_next;
-#ifdef QUEUE_SHOW_INTERNAL
-    int cnt = 0;
-#endif
     int ret;
-
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Merge Left] Sorted List:");
-    q_show_internal(left);
-    printf("[Merge Right] Sorted List:");
-    q_show_internal(right);
-#endif
 
     while (left_node != left || right_node != right) {
         // Left list all merged, directly merge all content from right list
@@ -520,23 +466,12 @@ struct list_head *q_merge_list(struct list_head *left,
             right->prev = right;
             right->next = right;
         }
-
-#ifdef QUEUE_SHOW_INTERNAL
-        printf("[%d] => ", ++cnt);
-        q_show_internal(merged);
-#endif
     }
 
     // Since our temp list is declared in stack and will be free after return
     // We should utilize space from caller and copy final result to there
     // left->prev = list_merged.prev;
     // left->next = list_merged.next;
-
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Merged] Sorted merged List:");
-    // q_show_internal(&list_merged);
-    q_show_internal(merged);
-#endif
 
     return merged;
 }
@@ -547,15 +482,9 @@ struct list_head *q_merge_sort(struct list_head *head, bool descend)
     struct list_head *left = head->next, *right = head->prev;
     struct list_head left_list, right_list, list_merged_inst;
     struct list_head *left_list_merged, *right_list_merged;
-    // struct list_head *head_original = head;
-    int ret;
+    int ret;  // cppcheck-suppress variableScope
 
     INIT_LIST_HEAD(&list_merged_inst);
-
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("Input List len: %d -> ", q_size(head));
-    q_show_internal(head);
-#endif
 
     // Zero element case
     if (left == head && right == head) {
@@ -614,21 +543,8 @@ struct list_head *q_merge_sort(struct list_head *head, bool descend)
     left_list_merged = q_merge_sort(&left_list, descend);
     right_list_merged = q_merge_sort(&right_list, descend);
 
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Left] Sorted List:");
-    q_show_internal(left_list_merged);
-    printf("[Right] Sorted List:");
-    q_show_internal(right_list_merged);
-#endif
-
     q_merge_list(left_list_merged, right_list_merged, &list_merged_inst,
                  descend);
-
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Already Final] Sorted List:");
-    q_show_internal(&list_merged_inst);
-    // q_show_internal(head);
-#endif
 
     head->prev = list_merged_inst.prev;
     head->next = list_merged_inst.next;
@@ -651,11 +567,6 @@ void q_sort(struct list_head *head, bool descend)
     if (head->prev == head->next)
         return;
 
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Original] =>");
-    q_show_internal(head);
-#endif
-
     head = q_merge_sort(head, descend);
 
     (*head_original)->prev = head->prev;
@@ -663,11 +574,6 @@ void q_sort(struct list_head *head, bool descend)
 
     (*head_original)->prev->next = (*head_original);
     (*head_original)->next->prev = (*head_original);
-
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Final] =>");
-    q_show_internal(*head_original);
-#endif
 }
 
 /* Remove every node which has a node with a strictly less value anywhere to
@@ -679,11 +585,6 @@ int q_ascend(struct list_head *head)
     struct list_head *node_max = NULL, *node;
     bool check_ascend;
     int ret;
-
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Q Ascend] => ");
-    q_show_internal(head);
-#endif
 
     // Find maximum value first <O(n)>
     list_for_each_entry (element_node, head, list) {
@@ -733,11 +634,6 @@ int q_ascend(struct list_head *head)
         }
     }
 
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Q Ascend Final] => ");
-    q_show_internal(head);
-#endif
-
     return q_size(head);
 }
 
@@ -750,11 +646,6 @@ int q_descend(struct list_head *head)
     struct list_head *node_max = NULL, *node;
     bool check_descend;
     int ret;
-
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Q Descend] => ");
-    q_show_internal(head);
-#endif
 
     // Find minimum value first <O(n)>
     list_for_each_entry (element_node, head, list) {
@@ -800,11 +691,6 @@ int q_descend(struct list_head *head)
         }
     }
 
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Q Descend Final] => ");
-    q_show_internal(head);
-#endif
-
     return q_size(head);
 }
 
@@ -828,11 +714,6 @@ int q_merge(struct list_head *head, bool descend)
 
     // Evaluate queue count and total element count
     list_for_each_entry (input_queue, head, chain) {
-#ifdef QUEUE_SHOW_INTERNAL
-        printf("[QID=%d] => ", input_queue->id);
-        q_show_internal(input_queue->q);
-#endif
-
         total_element_cnt += input_queue->size;
         queue_cnt++;
     }
@@ -847,10 +728,6 @@ int q_merge(struct list_head *head, bool descend)
                 break;
             }
         }
-#ifdef QUEUE_SHOW_INTERNAL
-        printf("[Test Iter] => %d ", actually_merged_cnt);
-        q_show_internal(queue_to_merge->q);
-#endif
 
         // Select node from each queue and get node to merge
         // Comparision based on string.
@@ -887,11 +764,6 @@ int q_merge(struct list_head *head, bool descend)
         actually_merged_cnt++;
     }
 
-#ifdef QUEUE_SHOW_INTERNAL
-    printf("[Merged Queue] => ");
-    q_show_internal(&merged_list);
-#endif
-
     // Attach merged list to qtest input queue along with modifying context.
     final_queue = list_entry(head->next, queue_contex_t, chain);
 
@@ -901,12 +773,6 @@ int q_merge(struct list_head *head, bool descend)
     final_queue->q->next = merged_list.next;
     final_queue->q->next->prev = final_queue->q;
 
-    list_for_each_entry (input_queue, head, chain) {
-#ifdef QUEUE_SHOW_INTERNAL
-        printf("[QID=%d] => ", input_queue->id);
-        q_show_internal(input_queue->q);
-#endif
-    }
 
     return actually_merged_cnt;
 }
