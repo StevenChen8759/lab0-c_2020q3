@@ -21,6 +21,17 @@ rh b
 rh a
 free
 new
+ih a
+ih b
+ih c
+ih d
+ih a
+ih c
+ascend
+rh a
+rh d
+free
+new
 ih a 3
 ih b
 ih c
